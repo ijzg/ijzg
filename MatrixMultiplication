@@ -1,0 +1,60 @@
+"```
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <cstdlib>
+#include <thread>
+#include <mutex>
+
+std::mutex mtx;
+
+void multiply_matrices(const std::vector<std::vector<int>>& A,
+                     const std::vector<std::vector<int>>& B,
+                     std::vector<std::vector<int>>& C,
+                     const int i, const int j) {
+    const int size = A.size();
+    mtx.lock();
+    C[i][j] = 0;
+
+    for (int k = 0; k < size; ++k) {
+        C[i][j] += A[i][k] * B[k][j];
+    }
+    mtx.unlock();
+}
+
+int main() {
+    const int n = 4;
+    std::srand(std::time(0));
+
+    std::vector<std::vector<int>> A(n, std::vector<int>(n));
+    std::vector<std::vector<int>> B(n, std::vector<int>(n));
+    std::vector<std::vector<int>> C(n, std::vector<int>(n));
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            A[i][j] = std::rand() % 5;
+            B[i][j] = std::rand() % 5;
+        }
+    }
+
+    std::vector<std::thread> threads;
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            threads.push_back(std::thread(multiply_matrices, std::ref(A), std::ref(B), std::ref(C), i ,j));
+        }
+    }
+
+    for (auto &t : threads) {
+        t.join();
+    }
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            std::cout << C[i][j] << "" "";
+        }
+        std::cout << std::endl;
+    }
+
+    return 0;
+}
+```"
